@@ -1,0 +1,21 @@
+<h2><p>{{meet.purpose}}</p></h2>
+<p>Created by: {{meet.creator}}</p>
+<p>at {{meet.time_created}}</p>
+<p>The meeting is {{meet.meet_time}}</p>
+<p>Click to invite more people</p>
+{% if users1 %}
+    <ul>
+    {% for user in users1 %}
+        {% if  user != meet.creator %}
+            
+        <li>
+            <a href='/meeting/{{meet.id}}/add/{{user.id}}'>{{ user.username }}</p>
+            
+        </li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No users are available.</p>
+{% endif %} 
+
