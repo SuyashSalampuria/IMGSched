@@ -21,3 +21,9 @@ class meetingForm(forms.ModelForm):
         model= meeting
         fields=['purpose','venue','meet_time','private']
 
+class commentForm(forms.ModelForm):
+    Comment = forms.CharField(label='Comment', widget=forms.Textarea)
+    class Meta:
+        model= comment
+        fields=['Comment']
+

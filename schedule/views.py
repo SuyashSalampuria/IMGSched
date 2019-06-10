@@ -7,7 +7,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from rest_framework.parsers import JSONParser
 from django.views.decorators.csrf import csrf_exempt
 from .serializers import MeetingSerializer, CommentSerializer
-from .forms import UserRegisterForm, meetingForm
+from .forms import UserRegisterForm, meetingForm, commentForm
 from .models import meeting, comment, participant
 from django.contrib.auth.models import User
 import requests
@@ -51,6 +51,7 @@ def allMeeting(request):
 
 @login_required
 def detailed_Meeting(request, meeting_id):
+
         invited=[]
         to_invite=[] 
         meet=meeting.objects.get(pk=meeting_id)
@@ -60,9 +61,16 @@ def detailed_Meeting(request, meeting_id):
         
                         invited.append(User.objects.get(pk=spec_user.user_id))
                         to_invite.filter(pk=spec_user.user_id).delete()
-                
+        form=commentForm()
+        if request.method == 'POST':
+                form = commentForm(request.POST)
+                form.instance.user = request.user
+                form.instance.meeting = meet
+                if form.is_valid():
+                        form.save()
+        comments1=comment.objects.filter(meeting=meet)
         if show_meeting(request, meet):
-                return render(request, 'schedule/details.html',{'meet':meet,'invited':invited, 'to_invite':to_invite}) 
+                return render(request, 'schedule/details.html',{'meet':meet,'invited':invited, 'to_invite':to_invite, 'form':form, 'comments':comments1, 'users':User}) 
         else:
                 return HttpResponse("Not accecible to you")
                 

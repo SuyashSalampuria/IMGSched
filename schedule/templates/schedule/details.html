@@ -31,6 +31,22 @@
     {% endfor %}
     </ul>
 
-   
 {% endif %} 
 
+<form method="POST" action="" >
+    {% csrf_token %}
+    {{ form.as_p}}
+    <div>
+        <button type="submit">Add comment</button>
+    </div>
+</form>
+{% if comments %}
+    <ul>
+    {% for comment in comments %}
+            
+        <li>
+                {{ comment.user }} - {{comment.Comment}}
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %} 
