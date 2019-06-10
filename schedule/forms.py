@@ -16,7 +16,8 @@ class meetingForm(forms.ModelForm):
     purpose = forms.CharField(label='purpose', max_length=255)
     venue= forms.CharField(label='venue', max_length=255)
     meet_time= forms.DateTimeField(initial=datetime.date.today)
+    private = forms.BooleanField(required=False)
     class Meta:
         model= meeting
-        fields=['purpose','venue','meet_time']
+        fields=['purpose','venue','meet_time','private']
 

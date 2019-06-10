@@ -1,14 +1,17 @@
 <h1> {{ user.username }} </h1>
 {% if meetings %}
     <ul>
+    
     {% for meeting in meetings %}
-        <li><a href="/meeting/{{ meeting.id }}/">
-            <p>Purpose:{{ meeting.purpose }}</p>
-            <p>Created by {{meeting.creator}}</p>
-            <p>At {{meeting.meet_time}}</p>
-        </a></li>
+        
+            <li><a href="/meeting/{{ meeting.id }}/">
+                <p>Purpose:{{ meeting.purpose }}</p>
+                <p>Created by {{meeting.creator}}</p>
+                <p>At {{meeting.meet_time}}</p>
+            </a></li>
+        
     {% endfor %}
     </ul>
 {% else %}
-    <p>No polls are available.</p>
+    <p>No meetings are available.</p>
 {% endif %} 

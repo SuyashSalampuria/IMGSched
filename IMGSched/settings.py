@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'social_django',
+    'rest_framework.authtoken',
     
 ]
 AUTHENTICATION_BACKENDS=(
@@ -128,6 +129,7 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+LOGIN_URL='/login/'
 LOGIN_REDIRECT_URL = '/meeting/'
 
 # Static files (CSS, JavaScript, Images)

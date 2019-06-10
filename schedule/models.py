@@ -13,7 +13,6 @@ class meeting(models.Model):
     def __str__(self):
         return self.purpose
 
-
 class participant(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     meeting=models.ForeignKey(meeting,on_delete=models.CASCADE)
