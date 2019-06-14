@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+
+
+
 class meeting(models.Model):
     creator = models.ForeignKey('auth.User',related_name='creator', on_delete=models.CASCADE)
     time_created = models.DateTimeField(default=timezone.now)

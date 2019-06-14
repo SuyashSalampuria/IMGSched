@@ -7,11 +7,15 @@ from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from rest_framework.parsers import JSONParser
 from django.views.decorators.csrf import csrf_exempt
 from .serializers import MeetingSerializer, CommentSerializer
-from .forms import UserRegisterForm, meetingForm, commentForm
+from .forms import UserRegisterForm, meetingForm
 from .models import meeting, comment, participant
 from django.contrib.auth.models import User
 import requests
 from schedule.permissions import show_meeting, add_invite
+from django.shortcuts import render
+from django.utils.safestring import mark_safe
+import json
+
 
 # Create your views here.
 def register(request):
@@ -60,17 +64,16 @@ def detailed_Meeting(request, meeting_id):
         for spec_user in spec_users:
         
                         invited.append(User.objects.get(pk=spec_user.user_id))
-                        to_invite.filter(pk=spec_user.user_id).delete()
-        form=commentForm()
-        if request.method == 'POST':
-                form = commentForm(request.POST)
-                form.instance.user = request.user
-                form.instance.meeting = meet
-                if form.is_valid():
-                        form.save()
+        to_invite = list(set(to_invite) - set(invited))
+        
+        # if request.method == 'POST':
+                
+        #         Commen=request.POST['com']
+        #         c1=comment(user=request.user, meeting=meet, Comment=Commen)
+        #         c1.save()
         comments1=comment.objects.filter(meeting=meet)
         if show_meeting(request, meet):
-                return render(request, 'schedule/details.html',{'meet':meet,'invited':invited, 'to_invite':to_invite, 'form':form, 'comments':comments1, 'users':User}) 
+                return render(request, 'schedule/details.html',{'meet':meet,'invited':invited, 'to_invite':to_invite,'comments':comments1, 'users':User, 'room_name_json': mark_safe(json.dumps(meeting_id))}) 
         else:
                 return HttpResponse("Not accecible to you")
                 
@@ -84,4 +87,6 @@ def addPartcipant(request, meeting_id, user_id):
                 p1=participant(meeting=meet , user=user1)
                 p1.save()
         return redirect("/meeting/")
+
+
          
