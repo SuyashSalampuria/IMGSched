@@ -3,7 +3,8 @@ from .models import meeting, comment, participant
 from django.contrib.auth.models import User
 
 def show_meeting(request,  meeting_obj):
-    
+    if meeting_obj.private==False:
+        return True
     if meeting_obj.creator == request.user:
         return True
     elif request.user.is_staff:

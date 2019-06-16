@@ -1,6 +1,11 @@
 from __future__ import print_function
+import datetime
+import pickle
+import os.path
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 from django.shortcuts import render, redirect
-
 from rest_framework import permissions, status
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
@@ -17,13 +22,9 @@ from schedule.permissions import show_meeting, add_invite
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 import json
-
 import datetime
-import pickle
-import os.path
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+from datetime import datetime
+from datetime import timedelta
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
@@ -46,6 +47,57 @@ def newMeeting(request):
                 form1.instance.creator = request.user
                 if form1.is_valid():
                         form1.save()
+                        meet_time=request.POST.get("meet_time")
+                       
+                        meet_time=meet_time.replace(" ","T")
+                       
+                        
+                        creds=None
+                        if os.path.exists('token.pickle'):
+                                with open('token.pickle', 'rb') as token:
+                                        creds = pickle.load(token)
+                        if not creds or not creds.valid:
+                                if creds and creds.expired and creds.refresh_token:
+                                        creds.refresh(Request())
+                                else:
+                                        flow = InstalledAppFlow.from_client_secrets_file(
+                                                'credentials.json', SCOPES)
+                                        creds = flow.run_local_server()
+        
+                                with open('token.pickle', 'wb') as token:
+                                        pickle.dump(creds, token)
+
+                        service = build('calendar', 'v3', credentials=creds)
+                        event = {
+                          'summary': request.POST.get("purpose"),
+                          'location': request.POST.get("venue"),
+                          'start': {
+                            'dateTime': meet_time,
+                            'timeZone': 'America/Los_Angeles',
+                          },
+                          'end': {
+                            'dateTime': meet_time,
+                            'timeZone': 'America/Los_Angeles',
+                          },
+                          
+                          'reminders': {
+                            'useDefault': False,
+                            'overrides': [
+                              {'method': 'email', 'minutes': 24 * 60},
+                              {'method': 'popup', 'minutes': 10},
+                            ],
+                          },
+                        }
+
+                        event = service.events().insert(calendarId='primary', body=event).execute()
+                        
+
+
+
+
+
+
+
                         return redirect('/meeting/')
                 else:
                         return HttpResponse("fill form correctly")
@@ -56,7 +108,7 @@ def newMeeting(request):
 @login_required
 def allMeeting(request):
         
-        meetings1 = meeting.objects.order_by('time_created')[:5]
+        meetings1 = meeting.objects.order_by('time_created')
         meetings2 = []
         for meet in meetings1:
                 if show_meeting(request,meet):
@@ -97,27 +149,3 @@ def addPartcipant(request, meeting_id, user_id):
                 p1=participant(meeting=meet , user=user1)
                 p1.save()
         return redirect("/meeting/")
-
-def main():
-    creds = None
-    # The file token.pickle stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server()
-        # Save the credentials for the next run
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-
-    service = build('calendar', 'v3', credentials=creds)
-
-         
