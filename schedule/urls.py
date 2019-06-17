@@ -7,4 +7,6 @@ urlpatterns=[
     
     path('new/',views.newMeeting),
     path('',views.allMeeting),
+    path('<int:meeting_id>/delete',views.delete_meeting),
+    path('<int:meeting_id>/update',views.update_meeting),
 ]

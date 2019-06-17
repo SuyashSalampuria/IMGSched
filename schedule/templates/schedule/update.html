@@ -1,0 +1,24 @@
+<h1>{{ user }}</h1>
+<form method="POST" action="" >
+    {% csrf_token %}
+    <p>
+        <label for="id_purpose">purpose:</label>
+        <input type="text" name="purpose" maxlength="255" required="" id="id_purpose" value="{{meeting.purpose}}">
+    </p>
+    <p>
+        <label for="id_venue">venue:</label>
+        <input type="text" name="venue" maxlength="255" required="" id="id_venue" value="{{meeting.venue}}">
+    </p>
+    <p>
+        <label for="id_meet_time">meeting time</label>
+        <input type="datetime-local" name="meet_time" maxlength="255" required="" id="id_purpose" required>
+    </p>
+    <p>
+        <label for="id_private">Private:</label>
+        <input type="checkbox" name="private" id="id_private" value="{{meeting.private}}">
+    </p>
+
+    <div>
+        <button type="submit">Update meeting</button>
+    </div>
+</form>

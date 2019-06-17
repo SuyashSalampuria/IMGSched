@@ -28,3 +28,10 @@ def add_invite(request, meeting_obj, user_obj):
         return True
     else:
         return False
+
+def show_invite_list(request, meeting_obj):
+    if meeting_obj.creator == request.user:
+        return True
+    elif request.user.is_staff:
+        return True
+    return False

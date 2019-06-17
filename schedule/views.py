@@ -18,7 +18,7 @@ from .forms import UserRegisterForm, meetingForm
 from .models import meeting, comment, participant
 from django.contrib.auth.models import User
 import requests
-from schedule.permissions import show_meeting, add_invite
+from schedule.permissions import show_meeting, add_invite, show_invite_list
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 import json
@@ -94,10 +94,6 @@ def newMeeting(request):
 
 
 
-
-
-
-
                         return redirect('/meeting/')
                 else:
                         return HttpResponse("fill form correctly")
@@ -121,18 +117,15 @@ def detailed_Meeting(request, meeting_id):
         invited=[]
         to_invite=[] 
         meet=meeting.objects.get(pk=meeting_id)
-        to_invite=User.objects.order_by('id')[:5]
+        to_invite=User.objects.order_by('id')
         spec_users = participant.objects.filter(meeting_id=meeting_id)
         for spec_user in spec_users:
         
                         invited.append(User.objects.get(pk=spec_user.user_id))
         to_invite = list(set(to_invite) - set(invited))
+        if show_invite_list(request, meet) != True:
+                to_invite=[]
         
-        # if request.method == 'POST':
-                
-        #         Commen=request.POST['com']
-        #         c1=comment(user=request.user, meeting=meet, Comment=Commen)
-        #         c1.save()
         comments1=comment.objects.filter(meeting=meet)
         if show_meeting(request, meet):
                 return render(request, 'schedule/details.html',{'meet':meet,'invited':invited, 'to_invite':to_invite,'comments':comments1, 'users':User, 'room_name_json': mark_safe(json.dumps(meeting_id))}) 
@@ -149,3 +142,26 @@ def addPartcipant(request, meeting_id, user_id):
                 p1=participant(meeting=meet , user=user1)
                 p1.save()
         return redirect("/meeting/")
+
+@login_required
+def delete_meeting(request, meeting_id):
+        meet=meeting.objects.get(pk=meeting_id)
+        if show_invite_list(request, meet ):
+                meet.delete()
+                return redirect("/meeting/")
+        else:
+                return HttpResponse("This meeting cant be deleted")
+
+@login_required
+def update_meeting(request, meeting_id):
+        meet=meeting.objects.get(pk=meeting_id)
+        if request.method=='POST':
+                meet.purpose=request.POST.get("purpose")
+                meet.venue=request.POST.get("venue")
+                meet.meet_time = request.POST.get("meet_time")
+                meet.private = request.POST.get("private")
+                meet.save()
+                return redirect("/meeting/")
+
+
+        return render(request, 'schedule/update.html',{'meeting':meet})

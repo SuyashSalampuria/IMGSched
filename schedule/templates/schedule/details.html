@@ -2,6 +2,8 @@
 <p>Created by: {{meet.creator}}</p>
 <p>at {{meet.time_created}}</p>
 <p>The meeting is {{meet.meet_time}}</p>
+<a href="/meeting/{{meet.id}}/delete"><button>Delete meeting</button></a>
+<a href="/meeting/{{meet.id}}/update"><button>Update meeting</button></a>
 {% if to_invite %}
 <p>Click to invite more people</p>
     <ul>
