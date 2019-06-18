@@ -52,32 +52,20 @@ def newMeeting(request):
                         meet_time=meet_time.replace(" ","T")
                        
                         
-                        creds=None
-                        if os.path.exists('token.pickle'):
-                                with open('token.pickle', 'rb') as token:
-                                        creds = pickle.load(token)
-                        if not creds or not creds.valid:
-                                if creds and creds.expired and creds.refresh_token:
-                                        creds.refresh(Request())
-                                else:
-                                        flow = InstalledAppFlow.from_client_secrets_file(
-                                                'credentials.json', SCOPES)
-                                        creds = flow.run_local_server()
-        
-                                with open('token.pickle', 'wb') as token:
-                                        pickle.dump(creds, token)
-
-                        service = build('calendar', 'v3', credentials=creds)
+                        
+                        service = build_service()
                         event = {
                           'summary': request.POST.get("purpose"),
                           'location': request.POST.get("venue"),
                           'start': {
                             'dateTime': meet_time,
-                            'timeZone': 'America/Los_Angeles',
+                            'timeZone': 'Asia/Kolkata',
+                            
                           },
                           'end': {
                             'dateTime': meet_time,
-                            'timeZone': 'America/Los_Angeles',
+                            'timeZone': 'Asia/Kolkata',
+                            
                           },
                           
                           'reminders': {
@@ -155,13 +143,58 @@ def delete_meeting(request, meeting_id):
 @login_required
 def update_meeting(request, meeting_id):
         meet=meeting.objects.get(pk=meeting_id)
+        
+        now=meet.meet_time
+        now=now-timedelta(hours=10)    
+        now1 = now.strftime("%Y-%m-%d (%H:%M:%S.%f)")
+        
+        now1=now1[0:10]+"T"+now1[12:26]+'Z'
+        print(now1)
+        
         if request.method=='POST':
-                meet.purpose=request.POST.get("purpose")
-                meet.venue=request.POST.get("venue")
-                meet.meet_time = request.POST.get("meet_time")
-                meet.private = request.POST.get("private")
-                meet.save()
+                service=build_service()
+                events_result = service.events().list(calendarId='primary', timeMin=now1,
+                                        maxResults=1, singleEvents=True,
+                                        orderBy='startTime').execute()
+                events = events_result.get('items', [])
+                if not events:
+                        print('No upcoming events found.')
+                for event in events:
+                        print(type(event))
+                        print(event['summary'])
+                        meet.purpose=request.POST.get("purpose")
+                        meet.venue=request.POST.get("venue")
+                        meet.meet_time = request.POST.get("meet_time")
+                        meet.private = request.POST.get("private")
+                        meet.save()
+                        id1=event['id']
+                        event['summary'] = meet.purpose
+                        event['location'] = meet.venue
+                        time1=meet.meet_time
+                        event['start']['datetime'] = time1
+                        event['end']['datetime'] = time1
+                        updated_event = service.events().update(calendarId='primary', eventId=id1, body=event).execute()
+                        print(updated_event['updated'])
                 return redirect("/meeting/")
 
 
         return render(request, 'schedule/update.html',{'meeting':meet})
+
+def build_service():
+        creds=None
+        if os.path.exists('token.pickle'):
+                with open('token.pickle', 'rb') as token:
+                        creds = pickle.load(token)
+        if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                        creds.refresh(Request())
+                else:
+                        flow = InstalledAppFlow.from_client_secrets_file(
+                                'credentials.json', SCOPES)
+                        creds = flow.run_local_server()
+        
+                with open('token.pickle', 'wb') as token:
+                        pickle.dump(creds, token)
+
+        service = build('calendar', 'v3', credentials=creds)
+        return service
